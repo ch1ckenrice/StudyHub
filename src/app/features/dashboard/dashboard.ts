@@ -2,11 +2,10 @@ import { Component, computed, inject } from '@angular/core';
 import { StudyHubDataService } from '../../core/services/studyhub-data.service';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { RelativeTimePipe } from '../../shared/pipes/relative-time.pipe';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, DatePipe, RelativeTimePipe],
+  imports: [RouterLink, DatePipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
