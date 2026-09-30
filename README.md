@@ -4,6 +4,8 @@
 
 StudyHub is a portfolio project built for university students and self-learners. It turns the usual scattered notes, deadlines, and study plans into a small learning CRM with a clear paper-inspired interface.
 
+**Live demo:** [studyhub-ch1ckenrice.netlify.app](https://studyhub-ch1ckenrice.netlify.app)
+
 ## Highlights
 
 - **Dashboard** — active courses, upcoming tasks, weekly study time, progress, and recent sessions at a glance.
