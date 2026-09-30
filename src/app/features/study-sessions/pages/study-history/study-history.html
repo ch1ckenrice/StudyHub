@@ -1,0 +1,62 @@
+<div class="history-page">
+  <section class="page-intro">
+    <div>
+      <span class="sh-eyebrow">Study activity</span>
+      <h2>Study history</h2>
+      <p>Review the focus sessions that count toward your weekly goal.</p>
+    </div>
+  </section>
+
+  @if (deleteError(); as errorMessage) {
+    <p class="session-action-error" role="alert">{{ errorMessage }}</p>
+  }
+
+  @if (isStudySessionsLoading()) {
+    <section class="history-loading sh-card">
+      <span class="sh-eyebrow">Study activity</span>
+      <strong>Loading your study sessions...</strong>
+    </section>
+  } @else {
+    <section class="history-panel sh-card">
+      <div class="section-header">
+        <div>
+          <span class="sh-eyebrow">All sessions</span>
+          <h3>Your recorded focus time</h3>
+        </div>
+
+        <span class="sh-tag"> {{ sessionsWithCourse().length }} total </span>
+      </div>
+
+      <div class="session-list">
+        @for (session of sessionsWithCourse(); track session.id) {
+          <article class="session-row">
+            <div class="session-row__info">
+              <strong>{{ session.courseTitle }}</strong>
+              <span>
+                {{ session.startedAt | date: 'EEEE, d MMM, HH:mm' }}
+              </span>
+            </div>
+
+            <span class="session-row__duration">
+              {{ formatDuration(session.durationMinutes) }}
+            </span>
+
+            <button
+              class="session-row__delete"
+              type="button"
+              [disabled]="deletingSessionId() === session.id"
+              (click)="removeSession(session.id)"
+            >
+              {{ deletingSessionId() === session.id ? 'Deleting...' : 'Delete' }}
+            </button>
+          </article>
+        } @empty {
+          <article class="empty-state">
+            <strong>No study sessions yet</strong>
+            <p>Start the timer to record your first focused study session.</p>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</div>

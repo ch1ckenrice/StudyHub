@@ -1,0 +1,209 @@
+@if (isNoteLoading()) {
+  <section class="notes-loading sh-card">
+    <span class="sh-eyebrow">Notes</span>
+    <strong>Loading your notes...</strong>
+  </section>
+} @else {
+  <div class="notes-page">
+    <section class="page-intro">
+      <div>
+        <span class="sh-eyebrow">Notes</span>
+        <h2>Lecture notes, formulas and study thoughts</h2>
+        <p>Keep useful notes connected to the courses where they belong.</p>
+      </div>
+      <button class="sh-btn" type="button" (click)="openNoteForm()">New note</button>
+    </section>
+
+    @if (noteActionError(); as errorMessage) {
+      <p class="action-error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isNoteFormOpen()) {
+      <section class="create-note-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">
+              {{ editingNoteId() ? 'Edit note' : 'New note' }}
+            </span>
+            <h3>
+              {{ editingNoteId() ? 'Refine your study note' : 'Capture an important idea' }}
+            </h3>
+          </div>
+
+          <button
+            class="sh-btn sh-btn--secondary"
+            type="button"
+            [disabled]="isSaving()"
+            (click)="closeNoteForm()"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <form class="note-form" [formGroup]="noteForm" (ngSubmit)="saveNote()">
+          <label>
+            <span>Note title</span>
+            <input type="text" formControlName="title" placeholder="Key concepts from lecture 4" />
+
+            @if (noteForm.controls.title.invalid && noteForm.controls.title.touched) {
+              <span class="form-error">Note title is required.</span>
+            }
+          </label>
+
+          @if (!editingNoteId()) {
+            <label>
+              <span>Course</span>
+              <select formControlName="courseId">
+                <option value="">Choose a course</option>
+
+                @for (course of courses(); track course.id) {
+                  <option [value]="course.id">{{ course.title }}</option>
+                }
+              </select>
+
+              @if (noteForm.controls.courseId.invalid && noteForm.controls.courseId.touched) {
+                <span class="form-error">Choose a course.</span>
+              }
+            </label>
+          }
+
+          <label class="note-form__content">
+            <span>Content</span>
+            <textarea
+              formControlName="content"
+              rows="6"
+              placeholder="Write the important idea, formula or question here..."
+            ></textarea>
+
+            @if (noteForm.controls.content.invalid && noteForm.controls.content.touched) {
+              <span class="form-error">Write at least 10 characters.</span>
+            }
+          </label>
+
+          <label>
+            <span>Tags</span>
+            <input type="text" formControlName="tags" placeholder="exam, formulas, lecture" />
+          </label>
+          @if (noteSaveError(); as errorMessage) {
+            <p class="form-error">{{ errorMessage }}</p>
+          }
+          <button class="sh-btn" type="submit" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving...' : editingNoteId() ? 'Save changes' : 'Save note' }}
+          </button>
+        </form>
+      </section>
+    }
+    <section class="notes-overview">
+      <article class="overview-card sh-card">
+        <span class="sh-eyebrow">Total notes</span>
+        <strong>{{ totalNotes() }}</strong>
+        <p>Saved study notes</p>
+      </article>
+
+      <article class="overview-card sh-card">
+        <span class="sh-eyebrow">Linked courses</span>
+        <strong>{{ uniqueCourses() }}</strong>
+        <p>Courses with notes</p>
+      </article>
+
+      <article class="overview-card overview-card--note">
+        <span class="sh-eyebrow">Most active course</span>
+        <strong>{{ mostActiveCourse().courseName }}</strong>
+        <p>
+          {{ mostActiveCourse().noteCount }}
+          {{ mostActiveCourse().noteCount === 1 ? 'note saved' : 'notes saved' }}
+        </p>
+      </article>
+    </section>
+
+    <section class="notes-layout">
+      <aside class="filter-panel sh-card">
+        <span class="sh-eyebrow">Filters</span>
+
+        <button
+          class="filter-btn"
+          type="button"
+          [class.active]="selectedCourseId() === null"
+          (click)="selectCourse(null)"
+        >
+          All notes
+        </button>
+
+        @for (course of courses(); track course.id) {
+          <button
+            class="filter-btn"
+            type="button"
+            [class.active]="selectedCourseId() === course.id"
+            (click)="selectCourse(course.id)"
+          >
+            {{ course.title }}
+          </button>
+        }
+      </aside>
+
+      <section class="notes-grid">
+        @for (note of filteredNotes(); track note.id) {
+          <article class="note-card">
+            <div class="note-card__top">
+              <span class="sh-tag">{{ note.course }}</span>
+
+              <div class="note-card__meta">
+                <small>{{ note.updatedAt | relativeTime }}</small>
+
+                <div class="note-card__actions">
+                  <button
+                    class="note-card-menu-trigger"
+                    type="button"
+                    aria-label="Open note actions"
+                    [attr.aria-expanded]="openNoteMenuId() === note.id"
+                    (click)="toggleNoteMenu(note.id)"
+                  >
+                    ⋯
+                  </button>
+
+                  @if (openNoteMenuId() === note.id) {
+                    <div class="note-card-menu">
+                      <button
+                        class="note-card-menu__item"
+                        type="button"
+                        (click)="openEditNoteForm(note)"
+                      >
+                        Edit note
+                      </button>
+
+                      <span class="note-card-menu__divider"></span>
+
+                      <button
+                        class="note-card-menu__item note-card-menu__item--danger"
+                        type="button"
+                        [disabled]="deletingNoteId() === note.id"
+                        (click)="removeNote(note.id)"
+                      >
+                        {{ deletingNoteId() === note.id ? 'Deleting...' : 'Delete note' }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <h3>{{ note.title }}</h3>
+            <p>{{ note.content }}</p>
+
+            <div class="tag-row">
+              @for (tag of note.tags; track tag) {
+                <span>#{{ tag }}</span>
+              }
+            </div>
+          </article>
+        } @empty {
+          <article class="empty-state sh-card">
+            <span class="sh-eyebrow">No notes</span>
+            <h3>Create your first note</h3>
+            <p>Save lecture ideas, formulas or exam hints and connect them to a course.</p>
+          </article>
+        }
+      </section>
+    </section>
+  </div>
+}

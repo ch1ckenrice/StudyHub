@@ -1,0 +1,66 @@
+<main class="auth-shell">
+  <section class="auth-brand">
+    <span class="sh-eyebrow">StudyHub</span>
+    <h1>Welcome back to your study desk.</h1>
+    <p>
+      Continue tracking deadlines, study sessions and course progress from one focused workspace.
+    </p>
+
+    <div class="auth-preview sh-card">
+      <span class="preview-pin"></span>
+      <strong>Today</strong>
+      <p>Biology lab report / Math exercises / 25 min study session</p>
+    </div>
+  </section>
+  <section class="auth-card sh-card">
+    <div>
+      <span class="sh-eyebrow">Login</span>
+      <h2>Sign in</h2>
+      <p>Use your email and password to continue.</p>
+    </div>
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+      <label>
+        <span>Email</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="student@email.com"
+        />
+
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <small class="field-error">Enter a valid email address.</small>
+        }
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Your password"
+        />
+
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <small class="field-error">Enter your password.</small>
+        }
+      </label>
+
+      @if (errorMessage()) {
+        <p class="auth-message auth-message--error" role="alert">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      <button class="sh-btn" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Signing in...' : 'Login' }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      New here?
+      <a routerLink="/register">Create account</a>
+    </p>
+  </section>
+</main>

@@ -1,0 +1,50 @@
+<section class="study-timer" aria-label="Study timer">
+  <div class="study-timer__course">
+    <span class="sh-eyebrow">Focus session</span>
+
+    <select
+      [value]="studyTimer.selectedCourseId() ?? ''"
+      [disabled]="studyTimer.timerStatus() !== 'idle'"
+      (change)="selectCourse($event)"
+    >
+      <option value="" disabled>Choose a course</option>
+
+      @for (course of ActiveCourses(); track course.id) {
+        <option [value]="course.id">{{ course.title }}</option>
+      }
+    </select>
+  </div>
+
+  <strong class="study-timer__value">
+    {{ studyTimer.timerValue() }}
+  </strong>
+
+  <span class="study-timer__status">
+    {{ studyTimer.timerStatus() }}
+  </span>
+
+  <div class="study-timer__actions">
+    @if (studyTimer.timerStatus() === 'running') {
+      <button class="sh-btn sh-btn--secondary" (click)="studyTimer.pauseTimer()">Pause</button>
+    } @else {
+      <button
+        class="sh-btn"
+        [disabled]="!studyTimer.selectedCourseId()"
+        (click)="studyTimer.startTimer()"
+      >
+        {{ studyTimer.timerStatus() === 'paused' ? 'Resume' : 'Start' }}
+      </button>
+    }
+
+    <button
+      class="sh-btn sh-btn--secondary"
+      [disabled]="studyTimer.timerStatus() === 'idle'"
+      (click)="studyTimer.stopTimer()"
+    >
+      Stop
+    </button>
+  </div>
+  @if (studyTimer.saveError(); as errorMessage) {
+    <p class="study-timer__error" role="alert">{{ errorMessage }}</p>
+  }
+</section>

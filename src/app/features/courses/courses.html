@@ -1,0 +1,161 @@
+@if (isCourseLoading()) {
+  <div>
+    <section class="courses-loading sh-card">
+      <span class="sh-eyebrow">Courses</span>
+      <strong>Loading your courses...</strong>
+    </section>
+  </div>
+} @else {
+  <div class="courses-page">
+    <section class="page-intro">
+      <div>
+        <span class="sh-eyebrow">Courses</span>
+        <h2>Subjects you are actively moving through</h2>
+        <p>Keep university courses, topics, tasks and study sessions in one focused workspace.</p>
+      </div>
+
+      <button class="sh-btn" type="button" (click)="openCreateForm()">New course</button>
+    </section>
+    @if (courseActionError(); as errorMessage) {
+      <p class="course-action-error">{{ errorMessage }}</p>
+    }
+
+    @if (isCourseFormOpen()) {
+      <section class="create-course-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">
+              {{ editingCourseId() ? 'Edit course' : 'New course' }}
+            </span>
+            <h3>
+              {{ editingCourseId() ? 'Update course details' : 'Create a subject' }}
+            </h3>
+          </div>
+
+          <button
+            class="open-btn"
+            type="button"
+            [disabled]="isSaving()"
+            (click)="closeCreateForm()"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <form class="course-form" [formGroup]="courseForm" (ngSubmit)="saveCourse()">
+          <label>
+            <span>Course title</span>
+            <input type="text" formControlName="title" placeholder="Biology" />
+            @if (courseForm.controls.title.invalid && courseForm.controls.title.touched) {
+              <span class="form-error">Course title is required.</span>
+            }
+          </label>
+
+          <label>
+            <span>Status</span>
+            <select formControlName="status">
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="completed">Completed</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Color</span>
+            <select formControlName="color">
+              <option value="green">Green</option>
+              <option value="amber">Amber</option>
+              <option value="rose">Rose</option>
+            </select>
+          </label>
+
+          @if (saveErrorMessage(); as errorMessage) {
+            <p class="form-error">{{ errorMessage }}</p>
+          }
+
+          <button class="sh-btn" type="submit" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving...' : editingCourseId() ? 'Save changes' : 'Create course' }}
+          </button>
+        </form>
+      </section>
+    }
+
+    <section class="courses-summary">
+      <article class="summary-note">
+        <span class="sh-eyebrow">Active</span>
+        <strong>{{ activeCourses() }}</strong>
+        <p>Courses currently in progress</p>
+      </article>
+      <article class="summary-note summary-note--paper">
+        <span class="sh-eyebrow">Study system</span>
+        <strong>Topics + Tasks</strong>
+        <p>Progress is calculated from completed work</p>
+      </article>
+    </section>
+
+    <section class="course-grid">
+      @for (course of courses(); track course.id) {
+        <article class="course-card sh-card">
+          <div class="course-card__header">
+            <span class="sh-tag">{{ course.status }}</span>
+
+            <div class="course-card__actions">
+              <button
+                class="course-menu-trigger"
+                type="button"
+                aria-label="Open course actions"
+                [attr.aria-expanded]="openCourseMenuId() === course.id"
+                (click)="toggleCourseMenu(course.id)"
+              >
+                ⋯
+              </button>
+
+              @if (openCourseMenuId() === course.id) {
+                <div class="course-menu">
+                  <button
+                    class="course-menu__item"
+                    type="button"
+                    (click)="openEditCourseForm(course)"
+                  >
+                    Edit course
+                  </button>
+
+                  <span class="course-menu__divider"></span>
+
+                  <button
+                    class="course-menu__item course-menu__item--danger"
+                    type="button"
+                    [disabled]="deletingCourseId() === course.id"
+                    (click)="removeCourse(course)"
+                  >
+                    {{ deletingCourseId() === course.id ? 'Deleting...' : 'Delete course' }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+          <div>
+            <h3>{{ course.title }}</h3>
+          </div>
+          <div class="course-meta">
+            <span>{{ course.completedTopics }}/{{ course.totalTopics }} topics</span>
+            <span>{{ course.openTasks }} open tasks</span>
+          </div>
+          <div class="course-progress">
+            <span [class]="course.color" [style.width.%]="getProgress(course)"></span>
+          </div>
+          <div class="course-card__footer">
+            <strong>{{ getProgress(course) }}%</strong>
+            <a class="open-btn" [routerLink]="['/app/courses', course.id]">Open</a>
+          </div>
+        </article>
+      } @empty {
+        <article class="empty-state sh-card">
+          <span class="sh-eyebrow">No courses</span>
+          <h3>Create your first course</h3>
+          <p>Add a university subject to start tracking topics, tasks and study sessions.</p>
+        </article>
+      }
+    </section>
+  </div>
+}

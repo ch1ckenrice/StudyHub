@@ -1,0 +1,491 @@
+@if (course(); as selectedCourse) {
+  <div class="course-details-page">
+    <section class="course-hero sh-card">
+      <div>
+        <span class="sh-eyebrow">{{ selectedCourse.status }} course</span>
+        <h2>{{ selectedCourse.title }}</h2>
+      </div>
+
+      <div class="course-actions">
+        <a class="sh-btn sh-btn--secondary" routerLink="/app/courses">Back</a>
+      </div>
+
+      <div class="course-hero__stats">
+        <article>
+          <span>Progress</span>
+          <strong>{{ getProgress(selectedCourse) }}%</strong>
+        </article>
+
+        <article>
+          <span>Open tasks</span>
+          <strong>{{ selectedCourse.openTasks }}</strong>
+        </article>
+
+        <article>
+          <span>Topics</span>
+          <strong>{{ selectedCourse.completedTopics }}/{{ selectedCourse.totalTopics }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="details-grid">
+      <article class="topics-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">Topics</span>
+            <h3>Study roadmap</h3>
+          </div>
+          <button class="sh-btn sh-btn--secondary" type="button" (click)="openTopicForm()">
+            Add topic
+          </button>
+        </div>
+
+        @if (topicActionError(); as errorMessage) {
+          <p class="action-error" role="alert">{{ errorMessage }}</p>
+        }
+
+        @if (isTopicFormOpen()) {
+          <form class="topic-form" [formGroup]="topicForm" (ngSubmit)="saveTopic()">
+            <label>
+              <span>Topic title</span>
+              <input type="text" formControlName="title" placeholder="Cell division" />
+
+              @if (topicForm.controls.title.invalid && topicForm.controls.title.touched) {
+                <span class="form-error">Topic title is required.</span>
+              }
+            </label>
+
+            <div class="topic-form__actions">
+              <button
+                class="sh-btn sh-btn--secondary"
+                type="button"
+                [disabled]="isTopicSaving()"
+                (click)="closeTopicForm()"
+              >
+                Cancel
+              </button>
+              @if (topicSaveError(); as errorMessage) {
+                <p class="form-error">{{ errorMessage }}</p>
+              }
+              <button class="sh-btn" type="submit" [disabled]="isTopicSaving()">
+                {{
+                  isTopicSaving() ? 'Saving...' : editingTopicId() ? 'Save changes' : 'Add topic'
+                }}
+              </button>
+            </div>
+          </form>
+        }
+        <div class="topics-list">
+          @for (topic of topics(); track topic.id) {
+            <div class="topic-row" [class]="topic.status">
+              <span class="topic-row__check"></span>
+
+              <div>
+                <strong>{{ topic.title }}</strong>
+                <p>{{ topic.status }}</p>
+              </div>
+              <div class="topic-row__actions">
+                <button
+                  class="topic-menu-trigger"
+                  type="button"
+                  aria-label="Open topic actions"
+                  [attr.aria-expanded]="openTopicMenuId() === topic.id"
+                  (click)="toggleTopicMenu(topic.id)"
+                >
+                  ⋯
+                </button>
+
+                @if (openTopicMenuId() === topic.id) {
+                  <div class="topic-menu">
+                    <span class="topic-menu__label">Change status</span>
+
+                    <button
+                      class="topic-menu__item"
+                      type="button"
+                      (click)="openEditTopicForm(topic)"
+                    >
+                      Edit topic
+                    </button>
+
+                    <span class="topic-menu__divider"></span>
+
+                    <button
+                      class="topic-menu__item"
+                      type="button"
+                      (click)="changeTopicStatus(topic.id, 'todo')"
+                    >
+                      To do
+                    </button>
+
+                    <button
+                      class="topic-menu__item"
+                      type="button"
+                      (click)="changeTopicStatus(topic.id, 'in-progress')"
+                    >
+                      In progress
+                    </button>
+
+                    <button
+                      class="topic-menu__item"
+                      type="button"
+                      (click)="changeTopicStatus(topic.id, 'done')"
+                    >
+                      Done
+                    </button>
+
+                    <span class="topic-menu__divider"></span>
+
+                    <button
+                      class="topic-menu__item topic-menu__item--danger"
+                      type="button"
+                      [disabled]="deletingTopicId() === topic.id"
+                      (click)="removeTopic(topic.id)"
+                    >
+                      {{ deletingTopicId() === topic.id ? 'Deleting...' : 'Delete topic' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="section-empty">No topics yet. Add the first one to build your roadmap.</p>
+          }
+        </div>
+      </article>
+
+      <article class="tasks-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">Tasks</span>
+            <h3>Course Tasks</h3>
+          </div>
+          <button class="sh-btn sh-btn--secondary" type="button" (click)="openTaskForm()">
+            Add task
+          </button>
+        </div>
+
+        @if (courseTaskActionError(); as errorMessage) {
+          <p class="action-error" role="alert">{{ errorMessage }}</p>
+        }
+
+        @if (isTaskFormOpen()) {
+          <form class="task-form" [formGroup]="taskForm" (ngSubmit)="saveTask()">
+            <label>
+              <span>Task title</span>
+              <input type="text" formControlName="title" placeholder="Finish lab report" />
+              @if (taskForm.controls.title.invalid && taskForm.controls.title.touched) {
+                <span class="form-error">Task title is required.</span>
+              }
+            </label>
+            <label>
+              <span>Due date</span>
+              <input type="date" formControlName="dueDate" />
+
+              @if (taskForm.controls.dueDate.invalid && taskForm.controls.dueDate.touched) {
+                <span class="form-error">Choose a due date.</span>
+              }
+            </label>
+
+            <label>
+              <span>Priority</span>
+              <select formControlName="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+            <div class="task-form__actions">
+              <button
+                class="sh-btn sh-btn--secondary"
+                type="button"
+                [disabled]="isCourseTaskSaving()"
+                (click)="closeTaskForm()"
+              >
+                Cancel
+              </button>
+              @if (courseTaskSaveError(); as errorMessage) {
+                <p class="form-error">{{ errorMessage }}</p>
+              }
+              <button class="sh-btn" type="submit" [disabled]="isCourseTaskSaving()">
+                {{
+                  isCourseTaskSaving() ? 'Saving...' : editingTaskId() ? 'Save changes' : 'Add task'
+                }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <div class="tasks-list">
+          @for (task of tasks(); track task.id) {
+            <div class="task-row">
+              <span class="task-row__priority" [class]="task.priority"></span>
+              <div>
+                <strong>{{ task.title }}</strong>
+                <p>{{ task.status }}</p>
+              </div>
+              <em>{{ task.dueDate | date: 'dd MMM' }}</em>
+              <div class="task-row__actions">
+                <button
+                  class="task-menu-trigger"
+                  type="button"
+                  aria-label="Open task actions"
+                  [attr.aria-expanded]="openTaskMenuId() === task.id"
+                  (click)="toggleTaskMenu(task.id)"
+                >
+                  ⋯
+                </button>
+
+                @if (openTaskMenuId() === task.id) {
+                  <div class="task-menu">
+                    <button class="task-menu__item" type="button" (click)="openEditTaskForm(task)">
+                      Edit task
+                    </button>
+
+                    <span class="task-menu__divider"></span>
+                    <span class="task-menu__label">Change status</span>
+
+                    <button
+                      class="task-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'todo')"
+                    >
+                      To do
+                    </button>
+
+                    <button
+                      class="task-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'in-progress')"
+                    >
+                      In progress
+                    </button>
+
+                    <button
+                      class="task-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'done')"
+                    >
+                      Done
+                    </button>
+
+                    <span class="task-menu__divider"></span>
+
+                    <button
+                      class="task-menu__item task-menu__item--danger"
+                      type="button"
+                      [disabled]="deletingCourseTaskId() === task.id"
+                      (click)="removeTask(task.id)"
+                    >
+                      {{ deletingCourseTaskId() === task.id ? 'Deleting...' : 'Delete task' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="section-empty">No tasks for this course yet.</p>
+          }
+        </div>
+      </article>
+
+      <article class="notes-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">Notes</span>
+            <h3>Course notes</h3>
+          </div>
+        </div>
+
+        <div class="notes-list">
+          @for (note of notes(); track note.id) {
+            <div class="note-card">
+              <strong>{{ note.title }}</strong>
+              <p>{{ note.content }}</p>
+              <span>{{ note.updatedAt | relativeTime }}</span>
+            </div>
+          } @empty {
+            <p class="section-empty">
+              No notes yet. Capture an important idea from your study session.
+            </p>
+          }
+        </div>
+      </article>
+
+      <article class="resources-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">Resources</span>
+            <h3>Files and links</h3>
+          </div>
+
+          <div class="resource-header-actions">
+            <button class="sh-btn sh-btn--secondary" type="button" (click)="openResourceForm()">
+              Add resource
+            </button>
+          </div>
+        </div>
+
+        @if (resourceActionError(); as errorMessage) {
+          <p class="action-error" role="alert">{{ errorMessage }}</p>
+        }
+
+        @if (isResourceFormOpen()) {
+          <form class="resource-form" [formGroup]="resourceForm" (ngSubmit)="saveResource()">
+            <div class="resource-type-picker" role="group" aria-label="Resource type">
+              <button
+                class="resource-type-picker__button"
+                [class.resource-type-picker__button--active]="
+                  resourceForm.controls.type.value === 'link'
+                "
+                type="button"
+                [attr.aria-pressed]="resourceForm.controls.type.value === 'link'"
+                (click)="changeResourceType('link')"
+              >
+                Link
+              </button>
+
+              <button
+                class="resource-type-picker__button"
+                [class.resource-type-picker__button--active]="
+                  resourceForm.controls.type.value === 'pdf'
+                "
+                type="button"
+                [attr.aria-pressed]="resourceForm.controls.type.value === 'pdf'"
+                (click)="changeResourceType('pdf')"
+              >
+                PDF
+              </button>
+            </div>
+
+            <label>
+              <span>Resource title</span>
+              <input type="text" formControlName="title" placeholder="Lecture slides — week 3" />
+
+              @if (resourceForm.controls.title.invalid && resourceForm.controls.title.touched) {
+                <span class="form-error">Resource title is required.</span>
+              }
+            </label>
+
+            @if (resourceForm.controls.type.value === 'link') {
+              <label>
+                <span>Resource URL</span>
+                <input type="url" formControlName="source" placeholder="https://..." />
+
+                @if (resourceForm.controls.source.invalid && resourceForm.controls.source.touched) {
+                  <span class="form-error">
+                    Enter a valid URL starting with http:// or https://.
+                  </span>
+                }
+              </label>
+            } @else {
+              <label>
+                <span>PDF file</span>
+                <input type="file" accept="application/pdf" (change)="selectPdfFile($event)" />
+
+                @if (selectedPdfFile(); as file) {
+                  <small class="selected-file">{{ file.name }}</small>
+                }
+              </label>
+            }
+
+            <div class="resource-form__actions">
+              <button
+                class="sh-btn sh-btn--secondary"
+                type="button"
+                [disabled]="isResourceSaving()"
+                (click)="closeResourceForm()"
+              >
+                Cancel
+              </button>
+
+              @if (resourceSaveError(); as errorMessage) {
+                <p class="form-error" role="alert">{{ errorMessage }}</p>
+              }
+
+              <button class="sh-btn" type="submit" [disabled]="isResourceSaving()">
+                {{
+                  isResourceSaving()
+                    ? 'Saving...'
+                    : resourceForm.controls.type.value === 'pdf'
+                      ? 'Upload PDF'
+                      : 'Add link'
+                }}
+              </button>
+            </div>
+          </form>
+        }
+
+        @if (isResourceLoading()) {
+          <p class="section-empty">Loading resources...</p>
+        } @else {
+          <div class="resources-list">
+            @for (resource of resources(); track resource.id) {
+              <div class="resource-row">
+                <span>{{ resource.type }}</span>
+
+                <div>
+                  <strong>{{ resource.title }}</strong>
+                  <p [title]="resource.source">{{ resource.source }}</p>
+                </div>
+
+                <div class="resource-row__actions">
+                  @if (resource.type === 'link') {
+                    <a
+                      class="open-btn"
+                      [href]="resource.source"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open link
+                    </a>
+                  } @else {
+                    <button class="open-btn" type="button" (click)="openPdfResource(resource)">
+                      Open PDF
+                    </button>
+                  }
+
+                  <button
+                    class="resource-menu-trigger"
+                    type="button"
+                    aria-label="Open resource actions"
+                    [attr.aria-expanded]="openResourceMenuId() === resource.id"
+                    (click)="toggleResourceMenu(resource.id)"
+                  >
+                    ⋯
+                  </button>
+
+                  @if (openResourceMenuId() === resource.id) {
+                    <div class="resource-menu">
+                      <button
+                        class="resource-menu__item resource-menu__item--danger"
+                        type="button"
+                        [disabled]="deletingResourceId() === resource.id"
+                        (click)="removeResource(resource)"
+                      >
+                        {{
+                          deletingResourceId() === resource.id ? 'Deleting...' : 'Delete resource'
+                        }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <p class="section-empty">
+                No resources yet. Add a useful link or PDF to keep it close.
+              </p>
+            }
+          </div>
+        }
+      </article>
+    </section>
+  </div>
+} @else {
+  <div class="course-details-page">
+    <section class="empty-state sh-card">
+      <span class="sh-eyebrow">Course not found</span>
+      <h2>This course does not exist.</h2>
+      <a class="sh-btn" routerLink="/app/courses">Back to courses</a>
+    </section>
+  </div>
+}

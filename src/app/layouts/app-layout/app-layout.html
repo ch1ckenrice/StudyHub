@@ -1,0 +1,90 @@
+<div class="app-shell">
+  <header class="mobile-header">
+    <a class="brand" routerLink="/app/dashboard" (click)="closeSidebar()">
+      <span class="brand__mark">SH</span>
+      <span>
+        <strong>StudyHub</strong>
+        <small>student workspace</small>
+      </span>
+    </a>
+
+    <button
+      class="sidebar-toggle"
+      type="button"
+      [attr.aria-label]="isSidebarOpen() ? 'Close navigation' : 'Open navigation'"
+      [attr.aria-expanded]="isSidebarOpen()"
+      [class.sidebar-toggle--open]="isSidebarOpen()"
+      (click)="toggleSidebar()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  @if (isSidebarOpen()) {
+    <button
+      class="sidebar-backdrop"
+      type="button"
+      aria-label="Close navigation"
+      (click)="closeSidebar()"
+    ></button>
+  }
+  <aside class="sidebar" [class.sidebar--open]="isSidebarOpen()">
+    <a class="brand" routerLink="/app/dashboard" (click)="closeSidebar()">
+      <span class="brand__mark">SH</span>
+      <span>
+        <strong>StudyHub</strong>
+        <small>student workspace</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/app/dashboard" routerLinkActive="active" (click)="closeSidebar()"
+        >Dashboard
+      </a>
+      <a routerLink="/app/courses" routerLinkActive="active" (click)="closeSidebar()">Courses </a>
+      <a routerLink="/app/tasks" routerLinkActive="active" (click)="closeSidebar()">Tasks </a>
+      <a routerLink="/app/notes" routerLinkActive="active" (click)="closeSidebar()">Notes</a>
+      <a routerLink="/app/profile" routerLinkActive="active" (click)="closeSidebar()">Profile</a>
+    </nav>
+
+    @if (!isProfileLoading()) {
+      <div class="sidebar-card">
+        <span class="sh-eyebrow">Weekly goal</span>
+        <strong>{{ weeklyStudyTimeLabel() }} / {{ weeklyGoalHours() }}h</strong>
+        <div class="mini-progress">
+          <span [style.width.%]="weeklyProgress()"></span>
+        </div>
+      </div>
+    } @else {
+      <div class="sidebar-card">
+        <span class="sh-eyebrow">Weekly goal</span>
+        <strong>Loading...</strong>
+      </div>
+    }
+
+    <button class="sidebar-sign-out" type="button" (click)="signOut()">Sign out</button>
+  </aside>
+
+  <main class="workspace">
+    <header class="topbar">
+      <app-study-timer />
+    </header>
+
+    <section class="content">
+      <router-outlet />
+    </section>
+
+    <footer class="workspace-footer">
+      <div class="workspace-footer__brand">
+        <span class="workspace-footer__mark">SH</span>
+        <span>StudyHub</span>
+      </div>
+
+      <p>Plan gently. Learn steadily.</p>
+
+      <span>© 2026 StudyHub</span>
+    </footer>
+  </main>
+</div>

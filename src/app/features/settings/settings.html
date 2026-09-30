@@ -1,0 +1,145 @@
+@if (isProfileLoading()) {
+  <section class="profile-loading sh-card">
+    <span class="sh-eyebrow">Profile</span>
+    <strong>Loading your study identity...</strong>
+  </section>
+} @else if (profile(); as currentProfile) {
+  <div class="profile-page">
+    <section class="page-intro">
+      <div>
+        <span class="sh-eyebrow">Profile</span>
+        <h2>Your study identity</h2>
+        <p>Manage the personal settings that shape your StudyHub workspace.</p>
+      </div>
+
+      @if (!isEditing()) {
+        <button class="sh-btn" type="button" (click)="startEditing()">Edit profile</button>
+      } @else {
+        <div class="intro-actions">
+          <button
+            class="sh-btn sh-btn--secondary"
+            type="button"
+            [disabled]="isProfileSaving()"
+            (click)="cancelEditing()"
+          >
+            Cancel
+          </button>
+          <button class="sh-btn" type="submit" form="profile-form" [disabled]="isProfileSaving()">
+            {{ isProfileSaving() ? 'Saving...' : 'Save changes' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="profile-grid">
+      <article class="profile-card sh-card">
+        <div class="profile-avatar">
+          @if (currentProfile.avatarUrl) {
+            <img [src]="currentProfile.avatarUrl" [alt]="'Avatar of ' + currentProfile.name" />
+          } @else {
+            <span>{{ currentProfile.name[0] }}</span>
+          }
+
+          <input
+            #avatarInput
+            class="avatar-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onAvatarSelected($event)"
+          />
+          @if (isEditing()) {
+            <button type="button" [disabled]="isAvatarUploading()" (click)="avatarInput.click()">
+              {{ isAvatarUploading() ? 'Uploading...' : 'Change' }}
+            </button>
+          }
+        </div>
+
+        <div>
+          <span class="sh-eyebrow">Student profile</span>
+          <h3>{{ currentProfile.name }}</h3>
+          <p>{{ currentProfile.email }}</p>
+        </div>
+        @if (avatarError(); as errorMessage) {
+          <p class="avatar-error" role="alert">{{ errorMessage }}</p>
+        }
+      </article>
+
+      <article class="goal-card">
+        <span class="sh-eyebrow">Learning goal</span>
+        @if (currentProfile.learningGoal) {
+          <strong>{{ currentProfile.learningGoal }}</strong>
+        } @else {
+          <strong class="goal-card__empty"> Add a study goal to stay focused. </strong>
+        }
+      </article>
+    </section>
+
+    <section class="preference-grid">
+      <article class="preference-card sh-card">
+        <span class="sh-eyebrow">Weekly goal</span>
+        <strong>{{ currentProfile.weeklyGoalHours }}h</strong>
+        <p>Target study time</p>
+      </article>
+    </section>
+
+    @if (isEditing()) {
+      <section class="settings-panel sh-card">
+        <div class="section-header">
+          <div>
+            <span class="sh-eyebrow">Edit mode</span>
+            <h3>Profile details</h3>
+          </div>
+        </div>
+        @if (saveErrorMessage()) {
+          <p class="profile-save-error" role="alert">
+            {{ saveErrorMessage() }}
+          </p>
+        }
+
+        <form
+          id="profile-form"
+          class="profile-form"
+          [formGroup]="profileForm"
+          (ngSubmit)="saveProfile()"
+        >
+          <label>
+            <span>Name</span>
+            <input type="text" formControlName="name" />
+
+            @if (profileForm.controls.name.touched && profileForm.controls.name.invalid) {
+              <small class="field-error">Enter at least 2 characters.</small>
+            }
+          </label>
+
+          <label class="wide">
+            <span>Learning goal</span>
+            <textarea formControlName="learningGoal"></textarea>
+
+            @if (
+              profileForm.controls.learningGoal.touched && profileForm.controls.learningGoal.invalid
+            ) {
+              <small class="field-error">Write at least 5 characters.</small>
+            }
+          </label>
+
+          <label>
+            <span>Weekly goal hours</span>
+            <input type="number" min="1" max="80" formControlName="weeklyGoalHours" />
+
+            @if (
+              profileForm.controls.weeklyGoalHours.touched &&
+              profileForm.controls.weeklyGoalHours.invalid
+            ) {
+              <small class="field-error">Choose a value from 1 to 80 hours.</small>
+            }
+          </label>
+        </form>
+      </section>
+    }
+  </div>
+} @else {
+  <section class="profile-loading sh-card">
+    <span class="sh-eyebrow">Profile</span>
+    <strong>Your profile could not be loaded.</strong>
+  </section>
+}

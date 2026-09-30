@@ -1,0 +1,153 @@
+:host {
+  display: block;
+}
+
+.history-page {
+  display: grid;
+  gap: 20px;
+}
+
+.page-intro {
+  display: grid;
+  gap: 8px;
+}
+
+.page-intro h2 {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.page-intro p {
+  color: var(--ink-muted);
+  max-width: 620px;
+}
+
+.history-panel {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.section-header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.section-header h3 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.session-list {
+  display: grid;
+}
+
+.session-row {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 14px 0;
+}
+
+.session-row:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.session-row__info {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.session-row__info strong {
+  font-size: 14px;
+}
+
+.session-row__info span {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.session-row__duration {
+  background: var(--paper-note);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 9px;
+  white-space: nowrap;
+}
+
+.session-row__delete {
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+.session-row__delete:hover {
+  background: rgba(185, 80, 61, 0.1);
+}
+
+.session-action-error {
+  background: rgba(185, 80, 61, 0.1);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
+.history-loading {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  padding: 24px;
+}
+
+.empty-state {
+  background: var(--paper-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+}
+
+.empty-state strong {
+  font-size: 13px;
+}
+
+.empty-state p {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .session-row {
+    align-items: flex-start;
+    grid-template-columns: 1fr auto;
+  }
+
+  .session-row__delete {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

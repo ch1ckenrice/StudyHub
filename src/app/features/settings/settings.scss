@@ -1,0 +1,269 @@
+:host {
+  display: block;
+}
+
+.profile-page {
+  display: grid;
+  gap: 20px;
+}
+
+.page-intro {
+  align-items: end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.page-intro h2 {
+  font-size: 30px;
+  line-height: 1.2;
+  margin-top: 6px;
+}
+
+.page-intro p {
+  color: var(--ink-muted);
+  margin-top: 8px;
+}
+
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 420px minmax(0, 1fr);
+}
+
+.profile-card {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 72px 1fr;
+  padding: 18px;
+}
+
+.profile-avatar {
+  align-items: center;
+  background: var(--accent);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  display: flex;
+  font-size: 28px;
+  font-weight: 800;
+  height: 72px;
+  justify-content: center;
+  position: relative;
+  width: 72px;
+}
+
+.profile-avatar::before {
+  background: var(--shadow-offset);
+  content: '';
+  inset: 5px -5px -5px 5px;
+  position: absolute;
+  z-index: -1;
+}
+
+.profile-avatar button {
+  background: var(--paper-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  bottom: -10px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  left: 50%;
+  padding: 4px 6px;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.profile-card h3 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin-top: 5px;
+}
+
+.profile-card p {
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.goal-card {
+  background: var(--paper-note);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.goal-card strong {
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.preference-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.preference-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+}
+
+.preference-card strong {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.preference-card p {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.section-header h3 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.profile-form {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.profile-form label.wide {
+  grid-column: 1 / -1;
+}
+
+.profile-form label span {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.profile-form input,
+.profile-form textarea,
+.profile-form select {
+  background: var(--paper-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+.profile-form textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus,
+.profile-form select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.profile-form label:has(.field-error) input,
+.profile-form label:has(.field-error) textarea,
+.profile-form label:has(.field-error) select {
+  border-color: var(--danger);
+}
+
+.profile-save-error {
+  background: rgba(185, 80, 61, 0.1);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+.goal-card__empty {
+  color: var(--ink-muted);
+  font-size: 16px;
+  font-style: italic;
+}
+.profile-loading {
+  display: grid;
+  gap: 8px;
+  min-height: 180px;
+  padding: 24px;
+}
+.avatar-input {
+  display: none;
+}
+
+.profile-avatar img {
+  border-radius: var(--radius-sm);
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.profile-avatar button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.avatar-error {
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 800;
+  grid-column: 1 / -1;
+  line-height: 1.4;
+}
+@media (max-width: 920px) {
+  .profile-grid,
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-intro .sh-btn,
+  .intro-actions,
+  .intro-actions .sh-btn {
+    width: 100%;
+  }
+
+  .preference-grid {
+    grid-template-columns: 1fr;
+  }
+}

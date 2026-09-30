@@ -1,0 +1,81 @@
+<main class="auth-shell">
+  <section class="auth-brand">
+    <span class="sh-eyebrow">StudyHub</span>
+    <h1>Build a calmer system for university work.</h1>
+    <p>Create courses, collect notes, track study time and keep upcoming deadlines visible.</p>
+
+    <div class="auth-preview sh-card">
+      <span class="preview-pin"></span>
+      <strong>Weekly goal</strong>
+      <p>Set an 8 hour study target and watch your progress grow session by session.</p>
+    </div>
+  </section>
+
+  <section class="auth-card sh-card">
+    <div>
+      <span class="sh-eyebrow">Register</span>
+      <h2>Create account</h2>
+      <p>Start with a simple profile. You can adjust your study goal later.</p>
+    </div>
+
+    <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submit()">
+      <label>
+        <span>Name</span>
+        <input type="text" formControlName="name" autocomplete="name" placeholder="Your name" />
+
+        @if (registerForm.controls.name.touched && registerForm.controls.name.invalid) {
+          <small class="field-error">Enter at least 2 characters.</small>
+        }
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="student@email.com"
+        />
+
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <small class="field-error">Enter a valid email address.</small>
+        }
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          placeholder="Create password"
+        />
+
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <small class="field-error">Use at least 8 characters.</small>
+        }
+      </label>
+
+      @if (errorMessage()) {
+        <p class="auth-message auth-message--error" role="alert">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      @if (successMessage()) {
+        <p class="auth-message auth-message--success">
+          {{ successMessage() }}
+        </p>
+      }
+
+      <button class="sh-btn" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating account...' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </p>
+  </section>
+</main>

@@ -1,0 +1,177 @@
+<div class="dashboard-grid">
+  <section class="summary-row">
+    <article class="metric-card sh-card">
+      <span class="sh-eyebrow">Active courses</span>
+      @if (isCourseLoading()) {
+        <strong>-</strong>
+        <p>Loading your progress...</p>
+      } @else {
+        <strong>{{ activeCourses() }}</strong>
+        <p>Courses currently in progress</p>
+      }
+    </article>
+
+    <article class="metric-card sh-card">
+      <span class="sh-eyebrow">Due soon </span>
+      @if (isTaskLoading()) {
+        <strong>-</strong>
+        <p>Loading tasks...</p>
+      } @else {
+        <strong>{{ dueSoon() }}</strong>
+        <p>Tasks waiting this week</p>
+      }
+    </article>
+
+    <article class="metric-card sh-card">
+      <span class="sh-eyebrow">Weekly study time</span>
+
+      @if (isProfileLoading() || isStudySessionLoading()) {
+        <strong>—</strong>
+        <p>Loading study summary...</p>
+      } @else {
+        <strong>{{ weeklyStudyTimeLabel() }}</strong>
+        <p>{{ weeklyProgress() }}% of {{ weeklyGoalHours() }}h goal</p>
+      }
+    </article>
+
+    <article class="metric-card sh-card">
+      <span class="sh-eyebrow">Progress</span>
+      @if (isCourseLoading() || isTopicLoading()) {
+        <strong>—</strong>
+        <p>Loading course progress...</p>
+      } @else {
+        <strong>{{ averageSubjectProgress() }}%</strong>
+        <p>Average subject progress</p>
+      }
+    </article>
+  </section>
+
+  <section class="focus-panel sh-card">
+    <div>
+      <span class="sh-eyebrow">Today focus</span>
+      <h2>Start with the work that moves the week.</h2>
+    </div>
+
+    <div class="focus-list">
+      @if (isTaskLoading()) {
+        <section class="dashboard-loading sh-card">
+          <strong>Loading your tasks...</strong>
+        </section>
+      } @else {
+        @for (item of todayFocus(); track item) {
+          <span>{{ item }}</span>
+        } @empty {
+          <article class="empty-state">
+            <strong>No focus items</strong>
+            <p>Add tasks with deadlines to build today’s plan.</p>
+          </article>
+        }
+      }
+    </div>
+  </section>
+
+  <section class="main-panel sh-card">
+    <div class="section-header">
+      <div>
+        <span class="sh-eyebrow">Next up</span>
+        <h2>Tasks due soon</h2>
+      </div>
+      <button class="sh-btn sh-btn--secondary" routerLink="/app/tasks">View all</button>
+    </div>
+
+    <div class="task-stack">
+      @if (isTaskLoading()) {
+        <section class="dashboard-loading sh-card">
+          <strong>Loading your tasks...</strong>
+        </section>
+      } @else {
+        @for (task of dashboardTasks(); track task.id) {
+          <article class="task-row">
+            <div class="task-row__marker" [class]="task.priority"></div>
+
+            <div>
+              <h3>{{ task.title }}</h3>
+              <p>{{ task.course }} / {{ task.status }}</p>
+            </div>
+
+            <strong>{{ task.dueDate | date: 'dd MMM' }}</strong>
+          </article>
+        } @empty {
+          <article class="empty-state">
+            <strong>No upcoming tasks</strong>
+            <p>Create a task to keep your next deadline visible.</p>
+          </article>
+        }
+      }
+    </div>
+  </section>
+
+  <section class="side-panel sh-card">
+    <div class="section-header">
+      <div>
+        <span class="sh-eyebrow">Subjects</span>
+        <h2>Progress map</h2>
+      </div>
+    </div>
+
+    <div class="subject-stack">
+      @for (subject of subjects(); track subject.name) {
+        <article class="subject-row">
+          <div class="subject-row__top">
+            <strong>{{ subject.name }}</strong>
+            <span>{{ subject.completedTopics }}/{{ subject.totalTopics }}</span>
+          </div>
+
+          <div class="subject-progress">
+            <span [class]="subject.color" [style.width.%]="subject.progress"></span>
+          </div>
+        </article>
+      } @empty {
+        <article class="empty-state">
+          <strong>No subjects yet</strong>
+          <p>Create your first course to start tracking progress.</p>
+        </article>
+      }
+    </div>
+  </section>
+  <section class="recent-sessions-panel sh-card">
+    <div class="section-header">
+      <div>
+        <span class="sh-eyebrow">Study activity</span>
+        <h2>Recent study sessions</h2>
+      </div>
+
+      <button class="sh-btn sh-btn--secondary" type="button" routerLink="/app/sessions">
+        See all
+      </button>
+    </div>
+
+    @if (isStudySessionLoading()) {
+      <section class="dashboard-loading">
+        <strong>Loading study sessions...</strong>
+      </section>
+    } @else {
+      <div class="recent-session-list">
+        @for (session of recentSessionsWithCourse(); track session.id) {
+          <article class="recent-session-row">
+            <div class="recent-session-row__info">
+              <strong>{{ session.courseTitle }}</strong>
+              <span>
+                {{ session.startedAt | date: 'EEE, d MMM, HH:mm' }}
+              </span>
+            </div>
+
+            <span class="recent-session-row__duration">
+              {{ formatDuration(session.durationMinutes) }}
+            </span>
+          </article>
+        } @empty {
+          <article class="empty-state">
+            <strong>No study sessions yet</strong>
+            <p>Start the timer to record your first focused study session.</p>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</div>

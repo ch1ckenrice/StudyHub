@@ -1,0 +1,403 @@
+<div class="tasks-page">
+  <section class="page-intro">
+    <div>
+      <span class="sh-eyebrow">Tasks</span>
+      <h2>Study sessions, assignments and study actions</h2>
+      <p>Plan the week by status, priority and deadline.</p>
+    </div>
+
+    <button class="sh-btn" type="button" (click)="openTaskForm()">New task</button>
+  </section>
+
+  @if (taskActionError(); as errorMessage) {
+    <p class="action-error" role="alert">{{ errorMessage }}</p>
+  }
+
+  @if (isTaskFormOpen()) {
+    <section class="create-task-panel sh-card">
+      <div class="section-header">
+        <div>
+          <span class="sh-eyebrow">
+            {{ editingTaskId() ? 'Edit task' : 'New task' }}
+          </span>
+
+          <h3>
+            {{ editingTaskId() ? 'Update this study action' : 'Plan a study action' }}
+          </h3>
+        </div>
+
+        <button
+          class="sh-btn sh-btn--secondary"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="closeTaskForm()"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <form class="task-form" [formGroup]="taskForm" (ngSubmit)="saveTask()">
+        <label>
+          <span>Task title</span>
+          <input type="text" formControlName="title" placeholder="Prepare for the seminar" />
+
+          @if (taskForm.controls.title.invalid && taskForm.controls.title.touched) {
+            <span class="form-error">Task title is required.</span>
+          }
+        </label>
+
+        @if (!editingTaskId()) {
+          <label>
+            <span>Course</span>
+            <select formControlName="courseId">
+              <option value="">Choose a course</option>
+
+              @for (course of courses(); track course.id) {
+                <option [value]="course.id">{{ course.title }}</option>
+              }
+            </select>
+
+            @if (taskForm.controls.courseId.invalid && taskForm.controls.courseId.touched) {
+              <span class="form-error">Choose a course.</span>
+            }
+          </label>
+        }
+
+        <label>
+          <span>Due date</span>
+          <input type="date" formControlName="dueDate" />
+
+          @if (taskForm.controls.dueDate.invalid && taskForm.controls.dueDate.touched) {
+            <span class="form-error">Choose a due date.</span>
+          }
+        </label>
+
+        <label>
+          <span>Priority</span>
+          <select formControlName="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+
+        @if (taskSaveError(); as errorMessage) {
+          <p class="form-error">{{ errorMessage }}</p>
+        }
+        <button class="sh-btn" type="submit" [disabled]="isSaving()">
+          {{ isSaving() ? 'Saving...' : editingTaskId() ? 'Save changes' : 'Create task' }}
+        </button>
+      </form>
+    </section>
+  }
+
+  <section class="tasks-overview">
+    <article class="overview-card sh-card">
+      <span class="sh-eyebrow">Open tasks</span>
+      @if (isTaskLoading()) {
+        <strong>-</strong>
+      } @else {
+        <strong>{{ todoTasks().length + inProgressTasks().length }}</strong>
+      }
+      <p>Still waiting for attention</p>
+    </article>
+
+    <article class="overview-card sh-card">
+      <span class="sh-eyebrow">In progress</span>
+      @if (isTaskLoading()) {
+        <strong>-</strong>
+      } @else {
+        <strong>{{ inProgressTasks().length }}</strong>
+      }
+      <p>Tasks currently being worked on</p>
+    </article>
+
+    <article class="overview-card sh-card">
+      <span class="sh-eyebrow">Completed</span>
+      @if (isTaskLoading()) {
+        <strong>-</strong>
+      } @else {
+        <strong>{{ doneTasks().length }}</strong>
+      }
+      <p>Tasks completed.</p>
+    </article>
+  </section>
+
+  <section class="task-board">
+    <article class="task-column sh-card">
+      <div class="column-header">
+        <h3>Todo</h3>
+        <span>{{ todoTasks().length }}</span>
+      </div>
+      @if (isTaskLoading()) {
+        <div class="task-card task-card--active">
+          <strong>Loading...</strong>
+        </div>
+      } @else {
+        <div class="task-stack">
+          @for (task of todoTasks(); track task.id) {
+            <div class="task-card">
+              <span class="priority" [class]="task.priority"></span>
+              <h4>{{ task.title }}</h4>
+              <p>{{ task.course }}</p>
+
+              <div class="task-meta">
+                <span>{{ task.dueDate | date: 'dd MMM' }}</span>
+              </div>
+              <div class="task-card__actions">
+                <button
+                  class="task-card-menu-trigger"
+                  type="button"
+                  aria-label="Open task actions"
+                  [attr.aria-expanded]="openTaskMenuId() === task.id"
+                  (click)="toggleTaskMenu(task.id)"
+                >
+                  ⋯
+                </button>
+
+                @if (openTaskMenuId() === task.id) {
+                  <div class="task-card-menu">
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="openEditTaskForm(task)"
+                    >
+                      Edit task
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+                    <span class="task-card-menu__label">Change status</span>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'todo')"
+                    >
+                      To do
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'in-progress')"
+                    >
+                      In progress
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'done')"
+                    >
+                      Done
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+
+                    <button
+                      class="task-card-menu__item task-card-menu__item--danger"
+                      type="button"
+                      [disabled]="deletingTaskId() === task.id"
+                      (click)="removeTask(task.id)"
+                    >
+                      {{ deletingTaskId() === task.id ? 'Deleting...' : 'Delete task' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column">
+              <strong>No todo tasks</strong>
+              <p>Create a task or move one back from progress.</p>
+            </div>
+          }
+        </div>
+      }
+    </article>
+    <article class="task-column sh-card">
+      <div class="column-header">
+        <h3>In progress</h3>
+        <span>{{ inProgressTasks().length }}</span>
+      </div>
+      @if (isTaskLoading()) {
+        <div class="task-card task-card--active">
+          <strong>Loading...</strong>
+        </div>
+      } @else {
+        <div class="task-stack">
+          @for (task of inProgressTasks(); track task.id) {
+            <div class="task-card task-card--active">
+              <span class="priority" [class]="task.priority"></span>
+              <h4>{{ task.title }}</h4>
+              <p>{{ task.course }}</p>
+
+              <div class="task-meta">
+                <span>{{ task.dueDate | date: 'dd MMM' }}</span>
+              </div>
+              <div class="task-card__actions">
+                <button
+                  class="task-card-menu-trigger"
+                  type="button"
+                  aria-label="Open task actions"
+                  [attr.aria-expanded]="openTaskMenuId() === task.id"
+                  (click)="toggleTaskMenu(task.id)"
+                >
+                  ⋯
+                </button>
+
+                @if (openTaskMenuId() === task.id) {
+                  <div class="task-card-menu">
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="openEditTaskForm(task)"
+                    >
+                      Edit task
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+
+                    <span class="task-card-menu__label">Change status</span>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'todo')"
+                    >
+                      To do
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'in-progress')"
+                    >
+                      In progress
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'done')"
+                    >
+                      Done
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+
+                    <button
+                      class="task-card-menu__item task-card-menu__item--danger"
+                      type="button"
+                      [disabled]="deletingTaskId() === task.id"
+                      (click)="removeTask(task.id)"
+                    >
+                      {{ deletingTaskId() === task.id ? 'Deleting...' : 'Delete task' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column">
+              <strong>Nothing in progress</strong>
+              <p>Start one focused task when you are ready.</p>
+            </div>
+          }
+        </div>
+      }
+    </article>
+
+    <article class="task-column sh-card">
+      <div class="column-header">
+        <h3>Done</h3>
+        <span>{{ doneTasks().length }}</span>
+      </div>
+      @if (isTaskLoading()) {
+        <div class="task-card task-card--active">
+          <strong>Loading...</strong>
+        </div>
+      } @else {
+        <div class="task-stack">
+          @for (task of doneTasks(); track task.id) {
+            <div class="task-card task-card--done">
+              <span class="priority" [class]="task.priority"></span>
+              <h4>{{ task.title }}</h4>
+              <p>{{ task.course }}</p>
+
+              <div class="task-meta">
+                <span>{{ task.dueDate | date: 'dd MMM' }}</span>
+              </div>
+              <div class="task-card__actions">
+                <button
+                  class="task-card-menu-trigger"
+                  type="button"
+                  aria-label="Open task actions"
+                  [attr.aria-expanded]="openTaskMenuId() === task.id"
+                  (click)="toggleTaskMenu(task.id)"
+                >
+                  ⋯
+                </button>
+
+                @if (openTaskMenuId() === task.id) {
+                  <div class="task-card-menu">
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="openEditTaskForm(task)"
+                    >
+                      Edit task
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+                    <span class="task-card-menu__label">Change status</span>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'todo')"
+                    >
+                      To do
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'in-progress')"
+                    >
+                      In progress
+                    </button>
+
+                    <button
+                      class="task-card-menu__item"
+                      type="button"
+                      (click)="changeTaskStatus(task.id, 'done')"
+                    >
+                      Done
+                    </button>
+
+                    <span class="task-card-menu__divider"></span>
+
+                    <button
+                      class="task-card-menu__item task-card-menu__item--danger"
+                      type="button"
+                      [disabled]="deletingTaskId() === task.id"
+                      (click)="removeTask(task.id)"
+                    >
+                      {{ deletingTaskId() === task.id ? 'Deleting...' : 'Delete task' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column">
+              <strong>No completed tasks</strong>
+              <p>Finished tasks will appear here.</p>
+            </div>
+          }
+        </div>
+      }
+    </article>
+  </section>
+</div>
